@@ -8,34 +8,44 @@ wc_dir="${base_dir}/Wordcount"
 linear_dir="${base_dir}/Linear"
 pr_dir="${base_dir}/Pagerank"
 
-if [ -d "./report" ]
-then
-    if [ -f "./report/console.log" ]
-    then
-        rm ./report/console.log
-    fi
-else
-    mkdir ./report
-fi
-touch ./report/console.log
-
-echo "SQLJoin"
+echo "vanilla" "SQLJoin"
 hdfs dfs -rm -r "${sql_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.SQLJoin ./target/tests-1.jar ${sql_dir} >> ./report/console.log
-echo "SQLSelection"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.SQLJoin ./target/tests-1.jar ${sql_dir}
+echo "vanilla" "SQLSelection"
 hdfs dfs -rm -r "${sql_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.SQLSelection ./target/tests-1.jar ${sql_dir} >> ./report/console.log
-echo "SQLAggregation"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.SQLSelection ./target/tests-1.jar ${sql_dir}
+echo "vanilla" "SQLAggregation"
 hdfs dfs -rm -r "${sql_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.SQLAggregation ./target/tests-1.jar ${sql_dir} >> ./report/console.log
-echo "WordCount"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.SQLAggregation ./target/tests-1.jar ${sql_dir}
+echo "vanilla" "WordCount"
 hdfs dfs -rm -r "${wc_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.WordCount ./target/tests-1.jar ${wc_dir} >> ./report/console.log
-echo "Linear"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.WordCount ./target/tests-1.jar ${wc_dir}
+echo "vanilla" "Linear"
 hdfs dfs -rm -r "${linear_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.LeastSquaresRegression ./target/tests-1.jar ${linear_dir} >> ./report/console.log
-echo "PageRank"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.LeastSquaresRegression ./target/tests-1.jar ${linear_dir}
+echo "vanilla" "PageRank"
 hdfs dfs -rm -r "${pr_dir}/Output"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.PageRank ./target/tests-1.jar ${pr_dir} >> ./report/console.log
-echo "Pi"
-${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.Pi ./target/tests-1.jar 10000000 >> ./report/console.log
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.PageRank ./target/tests-1.jar ${pr_dir}
+echo "vanilla" "Pi"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.vanilla.Pi ./target/tests-1.jar 10000
+
+echo "encryption" "SQLJoin"
+hdfs dfs -rm -r "${sql_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.SQLJoin ./target/tests-1.jar ${sql_dir}
+echo "encryption" "SQLSelection"
+hdfs dfs -rm -r "${sql_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.SQLSelection ./target/tests-1.jar ${sql_dir}
+echo "encryption" "SQLAggregation"
+hdfs dfs -rm -r "${sql_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.SQLAggregation ./target/tests-1.jar ${sql_dir}
+echo "encryption" "WordCount"
+hdfs dfs -rm -r "${wc_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.WordCount ./target/tests-1.jar ${wc_dir}
+echo "encryption" "Linear"
+hdfs dfs -rm -r "${linear_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.LeastSquaresRegression ./target/tests-1.jar ${linear_dir}
+echo "encryption" "PageRank"
+hdfs dfs -rm -r "${pr_dir}/Output"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.PageRank ./target/tests-1.jar ${pr_dir}
+echo "encryption" "Pi"
+${SPARK_HOME}/bin/spark-submit --class com.alexpyc.tests.encryption.Pi ./target/tests-1.jar 10000

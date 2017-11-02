@@ -1,7 +1,6 @@
-package com.alexpyc.tests
+package com.alexpyc.tests.vanilla
 
 import org.apache.spark.sql.SparkSession
-//import edu.berkeley.cs.rise.opaque.implicits._
 
 object SQLSelection {
     def main (args: Array[String]) {
@@ -16,6 +15,7 @@ object SQLSelection {
 
         val address = args(0)
         val spark = SparkSession.builder.master("local").enableHiveSupport().appName("SQLSelection").getOrCreate()
+        import spark.implicits._
 
         spark.sql("DROP TABLE IF EXISTS rankings")
         spark.sql(s"""
@@ -27,20 +27,12 @@ object SQLSelection {
             ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
             STORED AS SEQUENCEFILE LOCATION '${address}/Input/rankings'
         """)
-        spark.sql("DROP TABLE IF EXISTS rankings_selection")
-        spark.sql(s"""
-            CREATE EXTERNAL TABLE rankings_selection (
-                pageURL STRING,
-                pageRank INT
-            )
-            ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-            STORED AS SEQUENCEFILE LOCATION '${address}/Output/rankings_selection'
-        """)
-        spark.sql("""
-            INSERT OVERWRITE TABLE rankings_selection
-            SELECT pageURL, pageRank
-            FROM rankings WHERE pageRank > 10
-        """)
+        val df = spark.sql("SELECT * FROM rankings")
+        df.cache()
+
+        val result = df.select($"pageURL", $"pageRank").filter($"pageRank" > 10)
+        result.show()
+        result.write.option("header", "true").csv(s"${address}/Output/rankings_selection")
 
         spark.stop()
     }

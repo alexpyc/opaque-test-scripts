@@ -1,7 +1,7 @@
-package com.alexpyc.tests
+package com.alexpyc.tests.vanilla
 
 import org.apache.spark.sql.SparkSession
-//import edu.berkeley.cs.rise.opaque.implicits._
+import org.apache.spark.sql.functions._
 
 object SQLAggregation {
     def main (args: Array[String]) {
@@ -11,6 +11,7 @@ object SQLAggregation {
 
         val address = args(0)
         val spark = SparkSession.builder.master("local").enableHiveSupport().appName("SQLAggregation").getOrCreate()
+        import spark.implicits._
 
         spark.sql("DROP TABLE IF EXISTS uservisits")
         spark.sql(s"""
@@ -28,20 +29,14 @@ object SQLAggregation {
             ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
             STORED AS SEQUENCEFILE LOCATION '${address}/Input/uservisits'
         """)
-        spark.sql("DROP TABLE IF EXISTS uservisits_aggregation")
-        spark.sql(s"""
-            CREATE EXTERNAL TABLE uservisits_aggregation (
-                sourceIP STRING,
-                sumAdRevenue DOUBLE
-            )
-            ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-            STORED AS SEQUENCEFILE LOCATION '${address}/Output/uservisits_aggregation'
-        """)
-        spark.sql("""
-            INSERT OVERWRITE TABLE uservisits_aggregation
-            SELECT SUBSTR(sourceIP, 1, 7), SUM(adRevenue)
-            FROM uservisits GROUP BY SUBSTR(sourceIP, 1, 7)
-        """)
+        val df = spark.sql("SELECT * FROM uservisits")
+        df.cache()
+
+        val result = df.select(substring($"sourceIP", 1, 7).as("sourceIP"), $"adRevenue")
+            .groupBy($"sourceIP")
+            .agg(sum($"adRevenue").alias("sumAdRevenue"))
+        result.show()
+        result.write.option("header", "true").csv(s"${address}/Output/uservisits_aggregation")
 
         spark.stop()
     }

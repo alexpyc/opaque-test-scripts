@@ -1,7 +1,8 @@
-package com.alexpyc.tests
+package com.alexpyc.tests.encryption
 
 import org.apache.spark.sql.SparkSession
-//import edu.berkeley.cs.rise.opaque.implicits._
+import org.apache.spark.sql.functions._
+import edu.berkeley.cs.rise.opaque.implicits._
 
 object SQLJoin {
     def main (args: Array[String]) {
@@ -11,6 +12,8 @@ object SQLJoin {
 
         val address = args(0)
         val spark = SparkSession.builder.master("local").enableHiveSupport().appName("SQLJoin").getOrCreate()
+        edu.berkeley.cs.rise.opaque.Utils.initSQLContext(spark.sqlContext)
+        import spark.implicits._
 
         spark.sql("DROP TABLE IF EXISTS rankings")
         spark.sql(s"""
@@ -22,6 +25,8 @@ object SQLJoin {
             ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
             STORED AS SEQUENCEFILE LOCATION '${address}/Input/rankings'
         """)
+        val dfR = spark.sql("SELECT * FROM rankings").encrypted
+        dfR.cache()
         spark.sql("DROP TABLE IF EXISTS uservisits")
         spark.sql(s"""
             CREATE EXTERNAL TABLE uservisits (
@@ -38,26 +43,19 @@ object SQLJoin {
             ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
             STORED AS SEQUENCEFILE LOCATION '${address}/Input/uservisits'
         """)
-        spark.sql("DROP TABLE IF EXISTS rankings_uservisits_join")
-        spark.sql(s"""
-            CREATE EXTERNAL TABLE
-            rankings_uservisits_join (
-                sourceIP STRING,
-                avgPageRank DOUBLE,
-                totalRevenue DOUBLE
-            )
-            ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'
-            STORED AS SEQUENCEFILE LOCATION '${address}/Output/rankings_uservisits_join'
-        """)
-        spark.sql("""
-            INSERT OVERWRITE TABLE rankings_uservisits_join
-            SELECT sourceIP, avg(pageRank) as avgPageRank, sum(adRevenue) as totalRevenue
-            FROM rankings as R, uservisits as UV
-            WHERE R.pageURL = UV.destURL
-            AND UV.visitDate BETWEEN Date('2000-01-15') AND Date('2000-01-22')
-            GROUP BY UV.sourceIP
-            ORDER BY totalRevenue DESC LIMIT 1
-        """)
+        val dfUV = spark.sql("SELECT * FROM uservisits").encrypted
+        dfUV.cache()
+
+        val result = dfR.join(dfUV, dfR("pageURL") === dfUV("destURL"))
+            .filter($"visitDate" >= "2000-01-01")
+            .filter($"visitDate" <= "2000-12-31")
+            .groupBy($"sourceIP")
+            .agg(avg($"pageRank").as("avgPageRank"), sum($"adRevenue").as("totalRevenue"))
+            .select($"sourceIP", $"avgPageRank", $"totalRevenue")
+            .sort($"totalRevenue".desc)
+            .select($"sourceIP", $"avgPageRank", $"totalRevenue")
+        result.show()
+        result.write.option("header", "true").csv(s"${address}/Output/rankings_uservisits_join")
 
         spark.stop()
     }
