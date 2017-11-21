@@ -18,7 +18,7 @@ object Tests {
       .getOrCreate()
     Utils.initSQLContext(spark.sqlContext)
 
-    val numPartitions = args(0)
+    val numPartitions = args(0).toInt
     val task = args(1).toInt
     val mode = args(2).toInt
     val sizeLevel = args(3).toInt

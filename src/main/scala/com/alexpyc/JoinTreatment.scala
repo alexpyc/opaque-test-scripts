@@ -18,7 +18,7 @@ object JoinTreatment {
       .getOrCreate()
     Utils.initSQLContext(spark.sqlContext)
 
-    val numPartitions = args(0)
+    val numPartitions = args(0).toInt
     val sizeLevel = args(1).toInt
 
     JoinReordering.treatmentQuery(spark, (math.pow(2, sizeLevel) * 125).toInt.toString, numPartitions)

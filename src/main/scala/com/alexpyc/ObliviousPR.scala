@@ -18,7 +18,7 @@ object ObliviousPR {
       .getOrCreate()
     Utils.initSQLContext(spark.sqlContext)
 
-    val numPartitions = args(0)
+    val numPartitions = args(0).toInt
     val sizeLevel = args(1).toInt
 
     PageRank.run(spark, Oblivious, math.pow(2, sizeLevel).toInt.toString, numPartitions)
