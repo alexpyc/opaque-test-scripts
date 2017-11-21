@@ -2,6 +2,7 @@ package com.alexpyc.tests.encryption
 
 import org.apache.spark.sql.SparkSession
 import edu.berkeley.cs.rise.opaque.implicits._
+import org.apache.spark.sql.functions._
 import scala.math.random
 
 object Pi {

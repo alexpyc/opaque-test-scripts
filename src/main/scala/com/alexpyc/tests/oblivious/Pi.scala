@@ -2,6 +2,7 @@ package com.alexpyc.tests.oblivious
 
 import org.apache.spark.sql.SparkSession
 import edu.berkeley.cs.rise.opaque.implicits._
+import org.apache.spark.sql.functions._
 import scala.math.random
 
 object Pi {
@@ -24,7 +25,7 @@ object Pi {
         val data = (1 to n).map(x => Tuple1(power(random)+power(random)))
         val df = spark.createDataFrame(data).toDF("value").withColumn("type", lit("filtered")).repartition(n/500).oblivious
         df.cache()
-        
+
         val result = df.filter($"value" < 1)
         edu.berkeley.cs.rise.opaque.Utils.force(result)
         val count = result.count()
