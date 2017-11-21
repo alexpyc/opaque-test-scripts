@@ -21,7 +21,7 @@ object ObliviousLSR {
     val numPartitions = args(0).toInt
     val sizeLevel = args(1).toInt
 
-    val size = math.pow(10, i).toInt.toString
+    val size = math.pow(10, sizeLevel).toInt.toString
     LeastSquaresBenchmark.query(spark, Oblivious, size, numPartitions)
 
     spark.stop()

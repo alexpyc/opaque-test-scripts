@@ -21,7 +21,7 @@ object ObliviousQ2 {
     val numPartitions = args(0).toInt
     val sizeLevel = args(1).toInt
 
-    val size = math.pow(10, i).toInt.toString
+    val size = math.pow(10, sizeLevel).toInt.toString
     BigDataBenchmark.q2(spark, Oblivious, size, numPartitions)
 
     spark.stop()
