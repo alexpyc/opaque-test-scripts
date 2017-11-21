@@ -1,4 +1,4 @@
-package com.alexpyc.tests.encryption
+package com.alexpyc.tests.oblivious
 
 import org.apache.spark.sql.SparkSession
 import edu.berkeley.cs.rise.opaque.implicits._
@@ -22,9 +22,9 @@ object Pi {
         val n = args(0).toInt
         val data = sc.parallelize( (1 to n).map(x => Tuple1(power(random)+power(random))) , n/500)
         val data = (1 to n).map(x => Tuple1(power(random)+power(random)))
-        val df = spark.createDataFrame(data).toDF("value").withColumn("type", lit("filtered")).repartition(n/500).encrypted
+        val df = spark.createDataFrame(data).toDF("value").withColumn("type", lit("filtered")).repartition(n/500).oblivious
         df.cache()
-
+        
         val result = df.filter($"value" < 1)
         edu.berkeley.cs.rise.opaque.Utils.force(result)
         val count = result.count()
