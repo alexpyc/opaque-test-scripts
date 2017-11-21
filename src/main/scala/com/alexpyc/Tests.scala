@@ -18,7 +18,13 @@ object Tests {
       .getOrCreate()
     Utils.initSQLContext(spark.sqlContext)
 
-    val numPartitions = arg(0).toInt
+    val numPartitions = args(0)
+    val task = args(1).toInt
+    val mode = args(2).toInt
+    val sizeLevel = args(3).toInt
+
+    val tasks = List(BigDataBenchmark, LeastSquaresBenchmark, PageRank, JoinReordering, JoinCost)
+    val modes = List(Insecure, Encrypted, Oblivious)
 
     // BDB
     for (i <- 3 to 6) {
