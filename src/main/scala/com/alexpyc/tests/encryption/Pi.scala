@@ -21,7 +21,6 @@ object Pi {
         val sc = spark.sparkContext
 
         val n = args(0).toInt
-        val data = sc.parallelize( (1 to n).map(x => Tuple1(power(random)+power(random))) , n/500)
         val data = (1 to n).map(x => Tuple1(power(random)+power(random)))
         val df = spark.createDataFrame(data).toDF("value").withColumn("type", lit("filtered")).repartition(n/500).encrypted
         df.cache()
