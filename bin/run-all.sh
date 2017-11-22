@@ -27,7 +27,6 @@ done
 
 for i in `seq 0 13`
 do
-    $SPARK_HOME/bin/spark-submit --class com.alexpyc.InsecureJoin ./target/tests-1.jar $num_partition $i >> ./console.log
     $SPARK_HOME/bin/spark-submit --class com.alexpyc.EncryptedJoin ./target/tests-1.jar $num_partition $i >> ./console.log
     $SPARK_HOME/bin/spark-submit --class com.alexpyc.ObliviousJoin ./target/tests-1.jar $num_partition $i >> ./console.log
     $SPARK_HOME/bin/spark-submit --class com.alexpyc.JoinGene ./target/tests-1.jar $num_partition $i >> ./console.log
